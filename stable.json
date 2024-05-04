@@ -24,7 +24,8 @@
     "odroid-c4": "2024.5.1",
     "odroid-m1": "2024.5.1",
     "odroid-n2": "2024.5.1",
-    "odroid-xu": "2024.5.1"
+    "odroid-xu": "2024.5.1",
+    "panther": "2024.5.1"
   },
   "hassos": {
     "ova": "12.2",
@@ -45,7 +46,8 @@
     "odroid-xu4": "12.2",
     "generic-x86-64": "12.2",
     "generic-aarch64": "12.2",
-    "khadas-vim3": "12.2"
+    "khadas-vim3": "12.2",
+    "panther": "12.0"
   },
   "hassos-upgrade": {
     "11": "11.5",
@@ -74,12 +76,12 @@
     "multicast": "homeassistant/{arch}-hassio-multicast"
   },
   "images": {
-    "core": "ghcr.io/home-assistant/{machine}-homeassistant",
-    "supervisor": "ghcr.io/home-assistant/{arch}-hassio-supervisor",
-    "cli": "ghcr.io/home-assistant/{arch}-hassio-cli",
-    "audio": "ghcr.io/home-assistant/{arch}-hassio-audio",
-    "dns": "ghcr.io/home-assistant/{arch}-hassio-dns",
-    "observer": "ghcr.io/home-assistant/{arch}-hassio-observer",
-    "multicast": "ghcr.io/home-assistant/{arch}-hassio-multicast"
+    "core": "m.daocloud.io/ghcr.io/panther-ha/{machine}-homeassistant",
+    "supervisor": "registry.cycbox.com/panther-ha/{arch}-hassio-supervisor",
+    "cli": "m.daocloud.io/ghcr.io/home-assistant/{arch}-hassio-cli",
+    "audio": "m.daocloud.io/ghcr.io/home-assistant/{arch}-hassio-audio",
+    "dns": "m.daocloud.io/ghcr.io/home-assistant/{arch}-hassio-dns",
+    "observer": "m.daocloud.io/ghcr.io/home-assistant/{arch}-hassio-observer",
+    "multicast": "m.daocloud.io/ghcr.io/home-assistant/{arch}-hassio-multicast"
   }
 }
