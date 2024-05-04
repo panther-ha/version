@@ -1,6 +1,11 @@
 name: Release docker images
 
 on:
+  push:
+    paths:
+      - '**.json'
+    branches:
+      - 'panther'
   repository_dispatch:
   workflow_dispatch:
 
