@@ -3,7 +3,8 @@ FROM ${BUILD_FROM}
 
 COPY ./patch /patch
 
-RUN cd /usr/src/supervisor/ && \
+RUN apk add --no-cache patch && \
+    cd /usr/src/supervisor/ && \
     for patch in /patch/*.patch; do \
         patch -p1 < "$patch"; \
     done && \
