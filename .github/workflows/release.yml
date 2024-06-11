@@ -47,13 +47,6 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
           
-      - name: Login to ACR
-        uses: aliyun/acr-login@v1
-        with:
-          login-server: https://registry.cn-guangzhou.aliyuncs.com
-          username: "${{ secrets.ALIYUN_REGISTRY_USERNAME }}"
-          password: "${{ secrets.ALIYUN_REGISTRY_PASSWORD }}"
-    
       -
         name: Build and push
         uses: docker/build-push-action@v5
@@ -65,3 +58,4 @@ jobs:
             BUILD_FROM=ghcr.io/home-assistant/aarch64-hassio-supervisor:${{fromJson(steps.load_version.outputs.packageJson).supervisor}}
           tags: |
             ghcr.io/panther-ha/aarch64-hassio-supervisor:${{fromJson(steps.load_version.outputs.packageJson).supervisor}}
+            
