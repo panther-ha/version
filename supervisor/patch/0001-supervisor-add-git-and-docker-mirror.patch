@@ -1,0 +1,192 @@
+From 9f05f3e6f5ea91a0f1c298d566d039428e9f53d2 Mon Sep 17 00:00:00 2001
+From: yplam <yplam@yplam.com>
+Date: Wed, 12 Jun 2024 14:08:47 +0800
+Subject: [PATCH] supervisor add git and docker mirror
+
+---
+ supervisor/const.py            |  7 ++++--
+ supervisor/docker/interface.py | 35 +++++++++++++++++++++++----
+ supervisor/store/git.py        | 43 ++++++++++++++++++++++------------
+ supervisor/updater.py          | 19 +++++++++++++++
+ 4 files changed, 82 insertions(+), 22 deletions(-)
+
+diff --git a/supervisor/const.py b/supervisor/const.py
+index c87f8c11..e3ad822a 100644
+--- a/supervisor/const.py
++++ b/supervisor/const.py
+@@ -12,8 +12,8 @@ SUPERVISOR_VERSION = "99.9.9dev"
+ SERVER_SOFTWARE = f"HomeAssistantSupervisor/{SUPERVISOR_VERSION} aiohttp/{aiohttpversion} Python/{systemversion[0]}.{systemversion[1]}"
+ 
+ URL_HASSIO_ADDONS = "https://github.com/home-assistant/addons"
+-URL_HASSIO_APPARMOR = "https://version.home-assistant.io/apparmor_{channel}.txt"
+-URL_HASSIO_VERSION = "https://version.home-assistant.io/{channel}.json"
++URL_HASSIO_APPARMOR = "https://version.pantherha.com/apparmor_{channel}.txt"
++URL_HASSIO_VERSION = "https://version.pantherha.com/{channel}.json"
+ 
+ SUPERVISOR_DATA = Path("/data")
+ 
+@@ -165,6 +165,8 @@ ATTR_DISPLAYNAME = "displayname"
+ ATTR_DNS = "dns"
+ ATTR_DOCKER = "docker"
+ ATTR_DOCKER_API = "docker_api"
++ATTR_DOCKER_PREFIX_MIRROR = "docker_prefix_mirror"
++ATTR_DOCKER_GHCR_MIRROR = "docker_ghcr_mirror"
+ ATTR_DOCUMENTATION = "documentation"
+ ATTR_DOMAINS = "domains"
+ ATTR_ENABLE = "enable"
+@@ -181,6 +183,7 @@ ATTR_FREQUENCY = "frequency"
+ ATTR_FULL_ACCESS = "full_access"
+ ATTR_GATEWAY = "gateway"
+ ATTR_GPIO = "gpio"
++ATTR_GITHUB_MIRROR = "github_mirror"
+ ATTR_HASSIO_API = "hassio_api"
+ ATTR_HASSIO_ROLE = "hassio_role"
+ ATTR_HASSOS = "hassos"
+diff --git a/supervisor/docker/interface.py b/supervisor/docker/interface.py
+index 8ccf8c34..fb280d50 100644
+--- a/supervisor/docker/interface.py
++++ b/supervisor/docker/interface.py
+@@ -238,11 +238,36 @@ class DockerInterface(JobGroup):
+                 await self._docker_login(image)
+ 
+             # Pull new image
+-            docker_image = await self.sys_run_in_executor(
+-                self.sys_docker.images.pull,
+-                f"{image}:{version!s}",
+-                platform=MAP_ARCH[arch],
+-            )
++            error_to_raise = None
++            image_urls = [image]
++
++            if image.startswith("ghcr.io/home-assistant") or image.startswith("ghcr.io/panther-ha"):
++                for mirror in self.coresys.updater.docker_ghcr_mirror:
++                    image_url = image.replace("ghcr.io/home-assistant", mirror)
++                    image_url = image_url.replace("ghcr.io/panther-ha", mirror)
++                    image_urls.append(image_url)
++
++            for mirror in self.coresys.updater.docker_prefix_mirror:
++                image_urls.append(f"{mirror}/{image}")
++
++            for image_url in image_urls:
++                try:
++                    docker_image = await self.sys_run_in_executor(
++                        self.sys_docker.images.pull,
++                        f"{image_url}:{version!s}",
++                        platform=MAP_ARCH[arch],
++                    )
++                    if image_url != image:
++                        await self.sys_run_in_executor(
++                            docker_image.tag, image, tag=f"{version!s}"
++                        )
++                    error_to_raise = None
++                    break
++                except Exception as err:
++                    error_to_raise = err
++
++            if error_to_raise is not None:
++                raise error_to_raise
+ 
+             # Validate content
+             try:
+diff --git a/supervisor/store/git.py b/supervisor/store/git.py
+index b37f773b..7a6bb45c 100644
+--- a/supervisor/store/git.py
++++ b/supervisor/store/git.py
+@@ -95,22 +95,35 @@ class GitRepo(CoreSysAttributes):
+                 if value is not None
+             }
+ 
+-            try:
+-                _LOGGER.info("Cloning add-on %s repository", self.url)
+-                self.repo = await self.sys_run_in_executor(
+-                    ft.partial(
+-                        git.Repo.clone_from, self.url, str(self.path), **git_args
++            urls = [self.url]
++            if self.coresys.updater.github_mirror is not None:
++                for mirror in self.coresys.updater.github_mirror:
++                    urls.append(self.url.replace("github.com", mirror))
++
++            err_to_raise = None
++
++            for url in urls:
++                try:
++                    _LOGGER.info("Cloning add-on %s repository", self.url)
++                    self.repo = await self.sys_run_in_executor(
++                        ft.partial(
++                            git.Repo.clone_from, url, str(self.path), **git_args
++                        )
+                     )
+-                )
+-
+-            except (
+-                git.InvalidGitRepositoryError,
+-                git.NoSuchPathError,
+-                git.CommandError,
+-                UnicodeDecodeError,
+-            ) as err:
+-                _LOGGER.error("Can't clone %s repository: %s.", self.url, err)
+-                raise StoreGitCloneError() from err
++                    err_to_raise = None
++                    break
++
++                except (
++                    git.InvalidGitRepositoryError,
++                    git.NoSuchPathError,
++                    git.CommandError,
++                    UnicodeDecodeError,
++                ) as err:
++                    _LOGGER.error("Can't clone %s repository: %s.", self.url, err)
++                    err_to_raise = err
++
++            if err_to_raise is not None:
++                raise StoreGitCloneError() from err_to_raise
+ 
+     @Job(
+         name="git_repo_pull",
+diff --git a/supervisor/updater.py b/supervisor/updater.py
+index 47571fc0..558d8008 100644
+--- a/supervisor/updater.py
++++ b/supervisor/updater.py
+@@ -6,13 +6,17 @@ import logging
+ 
+ import aiohttp
+ from awesomeversion import AwesomeVersion
++from typing import List
+ 
+ from .const import (
+     ATTR_AUDIO,
+     ATTR_AUTO_UPDATE,
+     ATTR_CHANNEL,
+     ATTR_CLI,
++    ATTR_DOCKER_GHCR_MIRROR,
++    ATTR_DOCKER_PREFIX_MIRROR,
+     ATTR_DNS,
++    ATTR_GITHUB_MIRROR,
+     ATTR_HASSOS,
+     ATTR_HOMEASSISTANT,
+     ATTR_IMAGE,
+@@ -115,6 +119,21 @@ class Updater(FileConfiguration, CoreSysAttributes):
+             arch=self.sys_arch.supervisor
+         )
+ 
++    @property
++    def github_mirror(self) -> List[str] | None:
++        """Return OTA url for OS."""
++        return self._data.get(ATTR_GITHUB_MIRROR)
++
++    @property
++    def docker_prefix_mirror(self) -> List[str] | None:
++        """Return OTA url for OS."""
++        return self._data.get(ATTR_DOCKER_PREFIX_MIRROR)
++
++    @property
++    def docker_ghcr_mirror(self) -> List[str] | None:
++        """Return OTA url for OS."""
++        return self._data.get(ATTR_DOCKER_GHCR_MIRROR)
++
+     @property
+     def image_cli(self) -> str | None:
+         """Return image of CLI docker."""
+-- 
+2.45.1
+

@@ -75,11 +75,22 @@
   },
   "images": {
     "core": "ghcr.io/home-assistant/{machine}-homeassistant",
-    "supervisor": "ghcr.io/home-assistant/{arch}-hassio-supervisor",
+    "supervisor": "ghcr.io/panther-ha/{arch}-hassio-supervisor",
     "cli": "ghcr.io/home-assistant/{arch}-hassio-cli",
     "audio": "ghcr.io/home-assistant/{arch}-hassio-audio",
     "dns": "ghcr.io/home-assistant/{arch}-hassio-dns",
     "observer": "ghcr.io/home-assistant/{arch}-hassio-observer",
     "multicast": "ghcr.io/home-assistant/{arch}-hassio-multicast"
-  }
+  },
+  "github_mirror": [
+    "githubfast.com",
+    "521github.com",
+    "kkgithub.com"
+  ],
+  "docker_prefix_mirror" : [
+    "m.daocloud.io"
+  ],
+  "docker_ghcr_mirror": [
+    "registry.cn-hangzhou.aliyuncs.com/panther-ha"
+  ]
 }

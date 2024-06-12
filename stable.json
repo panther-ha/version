@@ -82,5 +82,16 @@
     "dns": "ghcr.io/home-assistant/{arch}-hassio-dns",
     "observer": "ghcr.io/home-assistant/{arch}-hassio-observer",
     "multicast": "ghcr.io/home-assistant/{arch}-hassio-multicast"
-  }
+  },
+  "github_mirror": [
+    "githubfast.com",
+    "521github.com",
+    "kkgithub.com"
+  ],
+  "docker_prefix_mirror" : [
+    "m.daocloud.io"
+  ],
+  "docker_ghcr_mirror": [
+    "registry.cn-hangzhou.aliyuncs.com/panther-ha"
+  ]
 }
