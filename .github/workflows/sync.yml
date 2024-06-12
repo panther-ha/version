@@ -41,11 +41,16 @@ jobs:
       -
         name: Build and push
         run: |
-          docker pull docker:25.0-dind
-          docker tag docker:25.0-dind registry.cn-hangzhou.aliyuncs.com/panther-ha/docker:25.0-dind
-          docker push registry.cn-hangzhou.aliyuncs.com/panther-ha/docker:25.0-dind
           homeassistant_version="${{fromJson(steps.load_version.outputs.packageJson).homeassistant.qemuarm-64}}"
           docker pull ghcr.io/home-assistant/qemuarm-64-homeassistant:$homeassistant_version
           docker tag ghcr.io/home-assistant/qemuarm-64-homeassistant:$homeassistant_version registry.cn-hangzhou.aliyuncs.com/panther-ha/qemuarm-64-homeassistant:$homeassistant_version
           docker push registry.cn-hangzhou.aliyuncs.com/panther-ha/qemuarm-64-homeassistant:$homeassistant_version
+          
+          components=(cli audio dns observer multicast)
+					for component in "${components[@]}"; do
+						version="${{fromJson(steps.load_version.outputs.packageJson).$component}}"
+						docker pull ghcr.io/home-assistant/aarch64-hassio-$component:$version
+						docker tag ghcr.io/home-assistant/aarch64-hassio-$component:$version registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-$component:$version
+						docker push registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-$component:$version
+					done
           
