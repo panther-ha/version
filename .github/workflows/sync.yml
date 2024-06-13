@@ -48,9 +48,10 @@ jobs:
           
           components=(cli audio dns observer multicast)
           for component in "${components[@]}"; do
-            version="${{fromJson(steps.load_version.outputs.packageJson).$component}}"
+            version=$(jq -r ".${component}" <<< "${{ steps.load_version.outputs.packageJson }}")
             docker pull ghcr.io/home-assistant/aarch64-hassio-$component:$version
             docker tag ghcr.io/home-assistant/aarch64-hassio-$component:$version registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-$component:$version
             docker push registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-$component:$version
           done
+          
           
