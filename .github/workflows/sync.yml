@@ -45,6 +45,10 @@ jobs:
           docker pull ghcr.io/home-assistant/qemuarm-64-homeassistant:$homeassistant_version
           docker tag ghcr.io/home-assistant/qemuarm-64-homeassistant:$homeassistant_version registry.cn-hangzhou.aliyuncs.com/panther-ha/qemuarm-64-homeassistant:$homeassistant_version
           docker push registry.cn-hangzhou.aliyuncs.com/panther-ha/qemuarm-64-homeassistant:$homeassistant_version
+          docker pull ghcr.io/home-assistant/qemuarm-64-homeassistant:landingpage
+          docker tag ghcr.io/home-assistant/qemuarm-64-homeassistant:landingpage registry.cn-hangzhou.aliyuncs.com/panther-ha/qemuarm-64-homeassistant:landingpage
+          docker push registry.cn-hangzhou.aliyuncs.com/panther-ha/qemuarm-64-homeassistant:landingpage
+
           
           cli_version="${{fromJson(steps.load_version.outputs.packageJson).cli}}"
           docker pull ghcr.io/home-assistant/aarch64-hassio-cli:$cli_version
