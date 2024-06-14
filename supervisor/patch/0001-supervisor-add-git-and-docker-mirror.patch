@@ -1,14 +1,14 @@
-From 9f05f3e6f5ea91a0f1c298d566d039428e9f53d2 Mon Sep 17 00:00:00 2001
+From c1c404889cc8344f0cb25ad82e1ec45c5927373a Mon Sep 17 00:00:00 2001
 From: yplam <yplam@yplam.com>
-Date: Wed, 12 Jun 2024 14:08:47 +0800
+Date: Fri, 14 Jun 2024 16:47:55 +0800
 Subject: [PATCH] supervisor add git and docker mirror
 
 ---
  supervisor/const.py            |  7 ++++--
- supervisor/docker/interface.py | 35 +++++++++++++++++++++++----
+ supervisor/docker/interface.py | 37 +++++++++++++++++++++++++----
  supervisor/store/git.py        | 43 ++++++++++++++++++++++------------
  supervisor/updater.py          | 19 +++++++++++++++
- 4 files changed, 82 insertions(+), 22 deletions(-)
+ 4 files changed, 84 insertions(+), 22 deletions(-)
 
 diff --git a/supervisor/const.py b/supervisor/const.py
 index c87f8c11..e3ad822a 100644
@@ -43,10 +43,10 @@ index c87f8c11..e3ad822a 100644
  ATTR_HASSIO_ROLE = "hassio_role"
  ATTR_HASSOS = "hassos"
 diff --git a/supervisor/docker/interface.py b/supervisor/docker/interface.py
-index 8ccf8c34..fb280d50 100644
+index 8ccf8c34..a5fb1507 100644
 --- a/supervisor/docker/interface.py
 +++ b/supervisor/docker/interface.py
-@@ -238,11 +238,36 @@ class DockerInterface(JobGroup):
+@@ -238,11 +238,38 @@ class DockerInterface(JobGroup):
                  await self._docker_login(image)
  
              # Pull new image
@@ -58,14 +58,16 @@ index 8ccf8c34..fb280d50 100644
 +            error_to_raise = None
 +            image_urls = [image]
 +
-+            if image.startswith("ghcr.io/home-assistant") or image.startswith("ghcr.io/panther-ha"):
++            if ((image.startswith("ghcr.io/home-assistant") or image.startswith("ghcr.io/panther-ha"))
++                    and self.coresys.updater.docker_ghcr_mirror is not None):
 +                for mirror in self.coresys.updater.docker_ghcr_mirror:
 +                    image_url = image.replace("ghcr.io/home-assistant", mirror)
 +                    image_url = image_url.replace("ghcr.io/panther-ha", mirror)
 +                    image_urls.append(image_url)
 +
-+            for mirror in self.coresys.updater.docker_prefix_mirror:
-+                image_urls.append(f"{mirror}/{image}")
++            if self.coresys.updater.docker_prefix_mirror is not None:
++                for mirror in self.coresys.updater.docker_prefix_mirror:
++                    image_urls.append(f"{mirror}/{image}")
 +
 +            for image_url in image_urls:
 +                try:
