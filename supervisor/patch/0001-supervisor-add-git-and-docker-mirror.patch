@@ -1,14 +1,14 @@
-From f9195a69f80733355f0cbdd78ac2f3fa51a43730 Mon Sep 17 00:00:00 2001
+From 2c6519b4f227890bac1f844f04ce3f49b55589f0 Mon Sep 17 00:00:00 2001
 From: yplam <yplam@yplam.com>
-Date: Sat, 15 Jun 2024 14:54:11 +0800
+Date: Sat, 15 Jun 2024 20:27:00 +0800
 Subject: [PATCH] supervisor add git and docker mirror
 
 ---
  supervisor/const.py            |  7 ++++--
  supervisor/docker/interface.py | 41 +++++++++++++++++++++++++++----
  supervisor/store/git.py        | 44 ++++++++++++++++++++++------------
- supervisor/updater.py          | 19 +++++++++++++++
- 4 files changed, 89 insertions(+), 22 deletions(-)
+ supervisor/updater.py          | 28 ++++++++++++++++++++++
+ 4 files changed, 98 insertions(+), 22 deletions(-)
 
 diff --git a/supervisor/const.py b/supervisor/const.py
 index c87f8c11..e3ad822a 100644
@@ -151,7 +151,7 @@ index b37f773b..e56d6075 100644
      @Job(
          name="git_repo_pull",
 diff --git a/supervisor/updater.py b/supervisor/updater.py
-index 47571fc0..558d8008 100644
+index 47571fc0..70313120 100644
 --- a/supervisor/updater.py
 +++ b/supervisor/updater.py
 @@ -6,13 +6,17 @@ import logging
@@ -194,6 +194,43 @@ index 47571fc0..558d8008 100644
      @property
      def image_cli(self) -> str | None:
          """Return image of CLI docker."""
+@@ -213,6 +232,7 @@ class Updater(FileConfiguration, CoreSysAttributes):
+                 _LOGGER.warning,
+             ) from err
+ 
++        _LOGGER.info("fetch data ok")
+         # Validate
+         try:
+             await self.sys_security.verify_own_content(calc_checksum(data))
+@@ -226,6 +246,8 @@ class Updater(FileConfiguration, CoreSysAttributes):
+                 _LOGGER.error,
+             ) from err
+ 
++        _LOGGER.info("verify data ok")
++
+         # Parse data
+         try:
+             data = json.loads(data)
+@@ -234,6 +256,8 @@ class Updater(FileConfiguration, CoreSysAttributes):
+                 f"Can't parse versions from {url}: {err}", _LOGGER.warning
+             ) from err
+ 
++        _LOGGER.info("load data ok")
++
+         # data valid?
+         if not data or data.get(ATTR_CHANNEL) != self.channel:
+             raise UpdaterError(f"Invalid data from {url}", _LOGGER.warning)
+@@ -285,6 +309,10 @@ class Updater(FileConfiguration, CoreSysAttributes):
+             self._data[ATTR_IMAGE][ATTR_OBSERVER] = data["images"]["observer"]
+             self._data[ATTR_IMAGE][ATTR_MULTICAST] = data["images"]["multicast"]
+ 
++            self._data[ATTR_GITHUB_MIRROR] = data["github_mirror"]
++            self._data[ATTR_DOCKER_PREFIX_MIRROR] = data["docker_prefix_mirror"]
++            self._data[ATTR_DOCKER_GHCR_MIRROR] = data["docker_ghcr_mirror"]
++
+         except KeyError as err:
+             raise UpdaterError(
+                 f"Can't process version data: {err}", _LOGGER.warning
 -- 
 2.45.1
 
