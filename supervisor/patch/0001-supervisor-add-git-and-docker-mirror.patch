@@ -1,6 +1,6 @@
-From 8e01a7db775b829f37eb6916712bcda3181c9033 Mon Sep 17 00:00:00 2001
+From 2d7fe47c3ced7c52244b8c28fb899464f63e919a Mon Sep 17 00:00:00 2001
 From: yplam <yplam@yplam.com>
-Date: Sat, 15 Jun 2024 20:35:29 +0800
+Date: Sat, 15 Jun 2024 20:45:52 +0800
 Subject: [PATCH] supervisor add git and docker mirror
 
 ---
@@ -151,7 +151,7 @@ index b37f773b..e56d6075 100644
      @Job(
          name="git_repo_pull",
 diff --git a/supervisor/updater.py b/supervisor/updater.py
-index 47571fc0..61d71c1c 100644
+index 47571fc0..a2866741 100644
 --- a/supervisor/updater.py
 +++ b/supervisor/updater.py
 @@ -6,13 +6,17 @@ import logging
@@ -179,17 +179,17 @@ index 47571fc0..61d71c1c 100644
 +    @property
 +    def github_mirror(self) -> List[str] | None:
 +        """Return OTA url for OS."""
-+        return self._data.get(ATTR_GITHUB_MIRROR)
++        return self._data[ATTR_GITHUB_MIRROR]
 +
 +    @property
 +    def docker_prefix_mirror(self) -> List[str] | None:
 +        """Return OTA url for OS."""
-+        return self._data.get(ATTR_DOCKER_PREFIX_MIRROR)
++        return self._data[ATTR_DOCKER_PREFIX_MIRROR]
 +
 +    @property
 +    def docker_ghcr_mirror(self) -> List[str] | None:
 +        """Return OTA url for OS."""
-+        return self._data.get(ATTR_DOCKER_GHCR_MIRROR)
++        return self._data[ATTR_DOCKER_GHCR_MIRROR]
 +
      @property
      def image_cli(self) -> str | None:
