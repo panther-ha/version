@@ -1,14 +1,14 @@
-From c1c404889cc8344f0cb25ad82e1ec45c5927373a Mon Sep 17 00:00:00 2001
+From f9195a69f80733355f0cbdd78ac2f3fa51a43730 Mon Sep 17 00:00:00 2001
 From: yplam <yplam@yplam.com>
-Date: Fri, 14 Jun 2024 16:47:55 +0800
+Date: Sat, 15 Jun 2024 14:54:11 +0800
 Subject: [PATCH] supervisor add git and docker mirror
 
 ---
  supervisor/const.py            |  7 ++++--
- supervisor/docker/interface.py | 37 +++++++++++++++++++++++++----
- supervisor/store/git.py        | 43 ++++++++++++++++++++++------------
+ supervisor/docker/interface.py | 41 +++++++++++++++++++++++++++----
+ supervisor/store/git.py        | 44 ++++++++++++++++++++++------------
  supervisor/updater.py          | 19 +++++++++++++++
- 4 files changed, 84 insertions(+), 22 deletions(-)
+ 4 files changed, 89 insertions(+), 22 deletions(-)
 
 diff --git a/supervisor/const.py b/supervisor/const.py
 index c87f8c11..e3ad822a 100644
@@ -43,10 +43,10 @@ index c87f8c11..e3ad822a 100644
  ATTR_HASSIO_ROLE = "hassio_role"
  ATTR_HASSOS = "hassos"
 diff --git a/supervisor/docker/interface.py b/supervisor/docker/interface.py
-index 8ccf8c34..a5fb1507 100644
+index 8ccf8c34..ed0f6900 100644
 --- a/supervisor/docker/interface.py
 +++ b/supervisor/docker/interface.py
-@@ -238,11 +238,38 @@ class DockerInterface(JobGroup):
+@@ -238,11 +238,42 @@ class DockerInterface(JobGroup):
                  await self._docker_login(image)
  
              # Pull new image
@@ -56,18 +56,22 @@ index 8ccf8c34..a5fb1507 100644
 -                platform=MAP_ARCH[arch],
 -            )
 +            error_to_raise = None
-+            image_urls = [image]
++            image_urls = []
 +
 +            if ((image.startswith("ghcr.io/home-assistant") or image.startswith("ghcr.io/panther-ha"))
 +                    and self.coresys.updater.docker_ghcr_mirror is not None):
 +                for mirror in self.coresys.updater.docker_ghcr_mirror:
++                    _LOGGER.info("Using GHCR mirror: %s", mirror)
 +                    image_url = image.replace("ghcr.io/home-assistant", mirror)
 +                    image_url = image_url.replace("ghcr.io/panther-ha", mirror)
 +                    image_urls.append(image_url)
 +
 +            if self.coresys.updater.docker_prefix_mirror is not None:
 +                for mirror in self.coresys.updater.docker_prefix_mirror:
++                    _LOGGER.info("Using Docker prefix mirror: %s", mirror)
 +                    image_urls.append(f"{mirror}/{image}")
++
++            image_urls.append(image)
 +
 +            for image_url in image_urls:
 +                try:
@@ -91,10 +95,10 @@ index 8ccf8c34..a5fb1507 100644
              # Validate content
              try:
 diff --git a/supervisor/store/git.py b/supervisor/store/git.py
-index b37f773b..7a6bb45c 100644
+index b37f773b..e56d6075 100644
 --- a/supervisor/store/git.py
 +++ b/supervisor/store/git.py
-@@ -95,22 +95,35 @@ class GitRepo(CoreSysAttributes):
+@@ -95,22 +95,36 @@ class GitRepo(CoreSysAttributes):
                  if value is not None
              }
  
@@ -106,6 +110,7 @@ index b37f773b..7a6bb45c 100644
 +            urls = [self.url]
 +            if self.coresys.updater.github_mirror is not None:
 +                for mirror in self.coresys.updater.github_mirror:
++                    _LOGGER.info("Using GitHub mirror: %s", mirror)
 +                    urls.append(self.url.replace("github.com", mirror))
 +
 +            err_to_raise = None
