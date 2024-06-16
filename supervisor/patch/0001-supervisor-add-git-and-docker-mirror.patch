@@ -1,6 +1,6 @@
-From 2d7fe47c3ced7c52244b8c28fb899464f63e919a Mon Sep 17 00:00:00 2001
+From 2fad3022eb6e71df1cce0300c0db11aa4425ced9 Mon Sep 17 00:00:00 2001
 From: yplam <yplam@yplam.com>
-Date: Sat, 15 Jun 2024 20:45:52 +0800
+Date: Sun, 16 Jun 2024 17:55:21 +0800
 Subject: [PATCH] supervisor add git and docker mirror
 
 ---
@@ -8,7 +8,8 @@ Subject: [PATCH] supervisor add git and docker mirror
  supervisor/docker/interface.py | 41 +++++++++++++++++++++++++++----
  supervisor/store/git.py        | 44 ++++++++++++++++++++++------------
  supervisor/updater.py          | 31 ++++++++++++++++++++++++
- 4 files changed, 101 insertions(+), 22 deletions(-)
+ supervisor/validate.py         |  6 +++++
+ 5 files changed, 107 insertions(+), 22 deletions(-)
 
 diff --git a/supervisor/const.py b/supervisor/const.py
 index c87f8c11..e3ad822a 100644
@@ -151,7 +152,7 @@ index b37f773b..e56d6075 100644
      @Job(
          name="git_repo_pull",
 diff --git a/supervisor/updater.py b/supervisor/updater.py
-index 47571fc0..a2866741 100644
+index 47571fc0..61d71c1c 100644
 --- a/supervisor/updater.py
 +++ b/supervisor/updater.py
 @@ -6,13 +6,17 @@ import logging
@@ -179,17 +180,17 @@ index 47571fc0..a2866741 100644
 +    @property
 +    def github_mirror(self) -> List[str] | None:
 +        """Return OTA url for OS."""
-+        return self._data[ATTR_GITHUB_MIRROR]
++        return self._data.get(ATTR_GITHUB_MIRROR)
 +
 +    @property
 +    def docker_prefix_mirror(self) -> List[str] | None:
 +        """Return OTA url for OS."""
-+        return self._data[ATTR_DOCKER_PREFIX_MIRROR]
++        return self._data.get(ATTR_DOCKER_PREFIX_MIRROR)
 +
 +    @property
 +    def docker_ghcr_mirror(self) -> List[str] | None:
 +        """Return OTA url for OS."""
-+        return self._data[ATTR_DOCKER_GHCR_MIRROR]
++        return self._data.get(ATTR_DOCKER_GHCR_MIRROR)
 +
      @property
      def image_cli(self) -> str | None:
@@ -234,6 +235,31 @@ index 47571fc0..a2866741 100644
          except KeyError as err:
              raise UpdaterError(
                  f"Can't process version data: {err}", _LOGGER.warning
+diff --git a/supervisor/validate.py b/supervisor/validate.py
+index 8aa3f296..b42c7f4f 100644
+--- a/supervisor/validate.py
++++ b/supervisor/validate.py
+@@ -17,7 +17,10 @@ from .const import (
+     ATTR_DIAGNOSTICS,
+     ATTR_DISPLAYNAME,
+     ATTR_DNS,
++    ATTR_DOCKER_GHCR_MIRROR,
++    ATTR_DOCKER_PREFIX_MIRROR,
+     ATTR_FORCE_SECURITY,
++    ATTR_GITHUB_MIRROR,
+     ATTR_HASSOS,
+     ATTR_HOMEASSISTANT,
+     ATTR_ID,
+@@ -141,6 +144,9 @@ SCHEMA_UPDATER_CONFIG = vol.Schema(
+         ),
+         vol.Optional(ATTR_OTA): vol.Url(),
+         vol.Optional(ATTR_AUTO_UPDATE, default=True): bool,
++        vol.Optional(ATTR_GITHUB_MIRROR, default=[]): str,
++        vol.Optional(ATTR_DOCKER_PREFIX_MIRROR, default=[]): str,
++        vol.Optional(ATTR_DOCKER_GHCR_MIRROR, default=[]): str,
+     },
+     extra=vol.REMOVE_EXTRA,
+ )
 -- 
 2.45.1
 
