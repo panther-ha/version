@@ -1,15 +1,15 @@
-From 76416535afff4c1ccc61172cf98894b20fd10e92 Mon Sep 17 00:00:00 2001
+From 5133d12d69ff6f7cda1b3a95b3a33fff68c16a5c Mon Sep 17 00:00:00 2001
 From: yplam <yplam@yplam.com>
-Date: Sun, 16 Jun 2024 20:32:02 +0800
+Date: Sun, 16 Jun 2024 21:03:13 +0800
 Subject: [PATCH] supervisor add git and docker mirror
 
 ---
  supervisor/const.py            |  6 +++--
- supervisor/docker/interface.py | 47 ++++++++++++++++++++++++++++++----
+ supervisor/docker/interface.py | 48 ++++++++++++++++++++++++++++++----
  supervisor/store/git.py        | 44 ++++++++++++++++++++-----------
  supervisor/updater.py          | 16 ++++++++++++
  supervisor/validate.py         |  4 +++
- 5 files changed, 95 insertions(+), 22 deletions(-)
+ 5 files changed, 96 insertions(+), 22 deletions(-)
 
 diff --git a/supervisor/const.py b/supervisor/const.py
 index c87f8c11..7b06eb3a 100644
@@ -43,10 +43,10 @@ index c87f8c11..7b06eb3a 100644
  ATTR_HASSIO_ROLE = "hassio_role"
  ATTR_HASSOS = "hassos"
 diff --git a/supervisor/docker/interface.py b/supervisor/docker/interface.py
-index 8ccf8c34..ce37c440 100644
+index 8ccf8c34..94903464 100644
 --- a/supervisor/docker/interface.py
 +++ b/supervisor/docker/interface.py
-@@ -238,11 +238,48 @@ class DockerInterface(JobGroup):
+@@ -238,11 +238,49 @@ class DockerInterface(JobGroup):
                  await self._docker_login(image)
  
              # Pull new image
@@ -60,9 +60,10 @@ index 8ccf8c34..ce37c440 100644
 +
 +            if self.coresys.updater.docker_mirror is not None:
 +                for k, v in self.coresys.updater.docker_mirror.items():
-+                    _LOGGER.info("Docker mirror %s : %s")
++                    _LOGGER.info("Docker mirror %s : %s", k, v)
 +                    if image == k:
-+                        image_urls.append(k)
++                        _LOGGER.info("Use mirror: %s", v)
++                        image_urls.append(v)
 +
 +            # if ((image.startswith("ghcr.io/home-assistant") or image.startswith("ghcr.io/panther-ha"))
 +            #         and self.coresys.updater.docker_ghcr_mirror is not None):
