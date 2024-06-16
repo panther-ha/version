@@ -88,10 +88,8 @@
     "521github.com",
     "kkgithub.com"
   ],
-  "docker_prefix_mirror" : [
-    "m.daocloud.io"
-  ],
-  "docker_ghcr_mirror": [
-    "registry.cn-hangzhou.aliyuncs.com/panther-ha"
+  "docker_mirror" : [
+    "ghcr.io/home-assistant/qemuarm-64-homeassistant": "registry.cn-hangzhou.aliyuncs.com/panther-ha/qemuarm-64-homeassistant",
+    "ghcr.io/home-assistant/aarch64-hassio-cli": "registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-cli"
   ]
 }
