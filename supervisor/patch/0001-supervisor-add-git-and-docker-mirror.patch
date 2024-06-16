@@ -1,15 +1,15 @@
-From 2fad3022eb6e71df1cce0300c0db11aa4425ced9 Mon Sep 17 00:00:00 2001
+From b6534a6137b477c211783ffb81cfa7ffecee4a3c Mon Sep 17 00:00:00 2001
 From: yplam <yplam@yplam.com>
-Date: Sun, 16 Jun 2024 17:55:21 +0800
+Date: Sun, 16 Jun 2024 18:10:29 +0800
 Subject: [PATCH] supervisor add git and docker mirror
 
 ---
  supervisor/const.py            |  7 ++++--
  supervisor/docker/interface.py | 41 +++++++++++++++++++++++++++----
  supervisor/store/git.py        | 44 ++++++++++++++++++++++------------
- supervisor/updater.py          | 31 ++++++++++++++++++++++++
+ supervisor/updater.py          | 28 ++++++++++++++++++++++
  supervisor/validate.py         |  6 +++++
- 5 files changed, 107 insertions(+), 22 deletions(-)
+ 5 files changed, 104 insertions(+), 22 deletions(-)
 
 diff --git a/supervisor/const.py b/supervisor/const.py
 index c87f8c11..e3ad822a 100644
@@ -152,7 +152,7 @@ index b37f773b..e56d6075 100644
      @Job(
          name="git_repo_pull",
 diff --git a/supervisor/updater.py b/supervisor/updater.py
-index 47571fc0..61d71c1c 100644
+index 47571fc0..70313120 100644
 --- a/supervisor/updater.py
 +++ b/supervisor/updater.py
 @@ -6,13 +6,17 @@ import logging
@@ -221,22 +221,19 @@ index 47571fc0..61d71c1c 100644
          # data valid?
          if not data or data.get(ATTR_CHANNEL) != self.channel:
              raise UpdaterError(f"Invalid data from {url}", _LOGGER.warning)
-@@ -285,6 +309,13 @@ class Updater(FileConfiguration, CoreSysAttributes):
+@@ -285,6 +309,10 @@ class Updater(FileConfiguration, CoreSysAttributes):
              self._data[ATTR_IMAGE][ATTR_OBSERVER] = data["images"]["observer"]
              self._data[ATTR_IMAGE][ATTR_MULTICAST] = data["images"]["multicast"]
  
 +            self._data[ATTR_GITHUB_MIRROR] = data["github_mirror"]
 +            self._data[ATTR_DOCKER_PREFIX_MIRROR] = data["docker_prefix_mirror"]
 +            self._data[ATTR_DOCKER_GHCR_MIRROR] = data["docker_ghcr_mirror"]
-+            _LOGGER.info("github %s",self._data[ATTR_GITHUB_MIRROR][0])
-+            _LOGGER.info("docker %s", self._data[ATTR_DOCKER_PREFIX_MIRROR][0])
-+            _LOGGER.info("docker %s", self._data[ATTR_DOCKER_GHCR_MIRROR][0])
 +
          except KeyError as err:
              raise UpdaterError(
                  f"Can't process version data: {err}", _LOGGER.warning
 diff --git a/supervisor/validate.py b/supervisor/validate.py
-index 8aa3f296..b42c7f4f 100644
+index 8aa3f296..a684806e 100644
 --- a/supervisor/validate.py
 +++ b/supervisor/validate.py
 @@ -17,7 +17,10 @@ from .const import (
@@ -254,9 +251,9 @@ index 8aa3f296..b42c7f4f 100644
          ),
          vol.Optional(ATTR_OTA): vol.Url(),
          vol.Optional(ATTR_AUTO_UPDATE, default=True): bool,
-+        vol.Optional(ATTR_GITHUB_MIRROR, default=[]): str,
-+        vol.Optional(ATTR_DOCKER_PREFIX_MIRROR, default=[]): str,
-+        vol.Optional(ATTR_DOCKER_GHCR_MIRROR, default=[]): str,
++        vol.Optional(ATTR_GITHUB_MIRROR, default=None): vol.Any(None, str),
++        vol.Optional(ATTR_DOCKER_PREFIX_MIRROR, default=None): vol.Any(None, str),
++        vol.Optional(ATTR_DOCKER_GHCR_MIRROR, default=None): vol.Any(None, str),
      },
      extra=vol.REMOVE_EXTRA,
  )
