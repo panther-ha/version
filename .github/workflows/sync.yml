@@ -74,4 +74,19 @@ jobs:
           docker pull ghcr.io/home-assistant/aarch64-hassio-multicast:$multicast_version
           docker tag ghcr.io/home-assistant/aarch64-hassio-multicast:$multicast_version registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-multicast:$multicast_version
           docker push registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-multicast:$multicast_version
-          
+
+      -
+        name: Get tag mosquitto
+        id: latest_tag_mosquitto
+        uses: jacobtomlinson/gha-get-docker-hub-tags@0.1.3
+        with:
+          org: 'homeassistant'  # Docker Hub user or organisation name
+          repo: 'aarch64-addon-mosquitto'
+        
+      -
+        name: Pull and push mosquitto
+        run: |
+          mosquitto_version="${{ steps.latest_tag_mosquitto.outputs.tag }}""
+          docker pull homeassistant/aarch64-addon-mosquitto:$mosquitto_version
+          docker tag homeassistant/aarch64-addon-mosquitto:$mosquitto_version registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-addon-mosquitto:$mosquitto_version
+          docker push registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-addon-mosquitto:$mosquitto_version
