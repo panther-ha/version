@@ -1,6 +1,6 @@
-From b6534a6137b477c211783ffb81cfa7ffecee4a3c Mon Sep 17 00:00:00 2001
+From 30fc0e026f5dac330badfb4850a7bf2fc7c16ac1 Mon Sep 17 00:00:00 2001
 From: yplam <yplam@yplam.com>
-Date: Sun, 16 Jun 2024 18:10:29 +0800
+Date: Sun, 16 Jun 2024 18:24:09 +0800
 Subject: [PATCH] supervisor add git and docker mirror
 
 ---
@@ -233,7 +233,7 @@ index 47571fc0..70313120 100644
              raise UpdaterError(
                  f"Can't process version data: {err}", _LOGGER.warning
 diff --git a/supervisor/validate.py b/supervisor/validate.py
-index 8aa3f296..a684806e 100644
+index 8aa3f296..b601f96c 100644
 --- a/supervisor/validate.py
 +++ b/supervisor/validate.py
 @@ -17,7 +17,10 @@ from .const import (
@@ -251,9 +251,9 @@ index 8aa3f296..a684806e 100644
          ),
          vol.Optional(ATTR_OTA): vol.Url(),
          vol.Optional(ATTR_AUTO_UPDATE, default=True): bool,
-+        vol.Optional(ATTR_GITHUB_MIRROR, default=None): vol.Any(None, str),
-+        vol.Optional(ATTR_DOCKER_PREFIX_MIRROR, default=None): vol.Any(None, str),
-+        vol.Optional(ATTR_DOCKER_GHCR_MIRROR, default=None): vol.Any(None, str),
++        vol.Optional(ATTR_GITHUB_MIRROR, default=[]): vol.Any(None, [str]),
++        vol.Optional(ATTR_DOCKER_PREFIX_MIRROR, default=[]): vol.Any(None, [str]),
++        vol.Optional(ATTR_DOCKER_GHCR_MIRROR, default=[]): vol.Any(None, [str]),
      },
      extra=vol.REMOVE_EXTRA,
  )
