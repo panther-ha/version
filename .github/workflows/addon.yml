@@ -1,4 +1,4 @@
-name: Sync docker images to Aliyun
+name: Sync addon docker images to Aliyun
 
 on:
   push:
