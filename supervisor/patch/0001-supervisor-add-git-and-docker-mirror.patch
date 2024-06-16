@@ -1,6 +1,6 @@
-From d49b22f0603b76782e10b1636d5b0e42aebd1e24 Mon Sep 17 00:00:00 2001
+From 76416535afff4c1ccc61172cf98894b20fd10e92 Mon Sep 17 00:00:00 2001
 From: yplam <yplam@yplam.com>
-Date: Sun, 16 Jun 2024 19:42:23 +0800
+Date: Sun, 16 Jun 2024 20:32:02 +0800
 Subject: [PATCH] supervisor add git and docker mirror
 
 ---
@@ -43,7 +43,7 @@ index c87f8c11..7b06eb3a 100644
  ATTR_HASSIO_ROLE = "hassio_role"
  ATTR_HASSOS = "hassos"
 diff --git a/supervisor/docker/interface.py b/supervisor/docker/interface.py
-index 8ccf8c34..3b6d9970 100644
+index 8ccf8c34..ce37c440 100644
 --- a/supervisor/docker/interface.py
 +++ b/supervisor/docker/interface.py
 @@ -238,11 +238,48 @@ class DockerInterface(JobGroup):
@@ -59,7 +59,7 @@ index 8ccf8c34..3b6d9970 100644
 +            image_urls = []
 +
 +            if self.coresys.updater.docker_mirror is not None:
-+                for k, v in self.coresys.updater.docker_mirror:
++                for k, v in self.coresys.updater.docker_mirror.items():
 +                    _LOGGER.info("Docker mirror %s : %s")
 +                    if image == k:
 +                        image_urls.append(k)
@@ -157,14 +157,14 @@ index b37f773b..e56d6075 100644
      @Job(
          name="git_repo_pull",
 diff --git a/supervisor/updater.py b/supervisor/updater.py
-index 47571fc0..33cfe862 100644
+index 47571fc0..bd9f1891 100644
 --- a/supervisor/updater.py
 +++ b/supervisor/updater.py
 @@ -6,13 +6,16 @@ import logging
  
  import aiohttp
  from awesomeversion import AwesomeVersion
-+from typing import List
++from typing import List, Dict
  
  from .const import (
      ATTR_AUDIO,
@@ -187,7 +187,7 @@ index 47571fc0..33cfe862 100644
 +        return self._data.get(ATTR_GITHUB_MIRROR)
 +
 +    @property
-+    def docker_mirror(self) -> List[str] | None:
++    def docker_mirror(self) -> Dict[str, str] | None:
 +        """Return OTA url for OS."""
 +        return self._data.get(ATTR_DOCKER_MIRROR)
 +
