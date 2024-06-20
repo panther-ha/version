@@ -29,9 +29,11 @@ jobs:
           username: "${{ secrets.ALIYUN_REGISTRY_USERNAME }}"
           password: "${{ secrets.ALIYUN_REGISTRY_PASSWORD }}"
 
-      - name: Sync addon docker images to Aliyun
+      - name: Config go
         uses: actions/setup-go@v5
         with:
           go-version: '1.20.0'
           cache-dependency-path: actions/go.mod
-        - run: cd actions && go run main.go
+
+      - name: Sync addon docker images to Aliyun
+        run: cd actions && go run main.go
