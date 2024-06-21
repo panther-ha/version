@@ -2,13 +2,16 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/containers/image/v5/docker"
 	"github.com/containers/image/v5/docker/reference"
 	"github.com/containers/image/v5/types"
 	"github.com/coreos/go-semver/semver"
 	types2 "github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
 	"github.com/pkg/errors"
 	"io"
@@ -17,7 +20,11 @@ import (
 	"strings"
 )
 
+var username = flag.String("username", "", "aliyun docker login username")
+var password = flag.String("password", "", "aliyun docker login password")
+
 func main() {
+	flag.Parse()
 	data, err := os.ReadFile("../stable.json")
 	if err != nil {
 		log.Fatal(err)
@@ -44,12 +51,12 @@ func main() {
 		var tag string
 		tag, err = getDockerRepositoryLastTag(ctx, repo)
 		if err != nil {
-			log.Println(err)
+			log.Fatal(err)
 			continue
 		}
 		err = pullTagPush(ctx, cli, repo, mirror.(string), tag)
 		if err != nil {
-			log.Println(err)
+			log.Fatal(err)
 			continue
 		}
 	}
@@ -78,9 +85,22 @@ func pullTagPush(ctx context.Context, cli *client.Client, repo, mirror, tag stri
 		return err
 	}
 	log.Println("Pushing", imageTarget)
+	authConfig := registry.AuthConfig{
+		Username: *username,
+		Password: *password,
+	}
+	encodedJSON, err := json.Marshal(authConfig)
+	if err != nil {
+		return err
+	}
+	authStr := base64.URLEncoding.EncodeToString(encodedJSON)
+
 	// Push the image
 	pushReader, err := cli.ImagePush(ctx, imageTarget,
-		types2.ImagePushOptions{Platform: "linux/arm64"})
+		types2.ImagePushOptions{
+			RegistryAuth: authStr,
+			Platform:     "linux/arm64",
+		})
 	if err != nil {
 		return err
 	}

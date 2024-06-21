@@ -36,4 +36,4 @@ jobs:
           cache-dependency-path: actions/go.mod
 
       - name: Sync addon docker images to Aliyun
-        run: cd actions && go run main.go
+        run: cd actions && go run main.go --username ${{ secrets.ALIYUN_REGISTRY_USERNAME }} --password ${{ secrets.ALIYUN_REGISTRY_PASSWORD }}
