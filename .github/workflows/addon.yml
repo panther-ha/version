@@ -1,6 +1,8 @@
 name: Sync addon docker images to Aliyun
 
 on:
+  schedule:
+    - cron: '30 5 * * *'
   push:
     paths:
       - '**.json'
