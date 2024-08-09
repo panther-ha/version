@@ -1,0 +1,77 @@
+name: Sync docker images to Aliyun
+
+on:
+  push:
+    paths:
+      - '**.json'
+    branches:
+      - '12.4'
+  repository_dispatch:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    if: ${{ github.event.repository.owner.id }} == ${{ github.event.sender.id }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      - id: load_version
+        run: |
+          content=`cat ./stable.json`
+          # the following lines are only required for multi line json
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          # end of optional handling for multi line json
+          echo "::set-output name=packageJson::$content"
+          
+      - name: Login to Aliyun Container Registry
+        uses: docker/login-action@v3.1.0
+        with:
+          registry: registry.cn-hangzhou.aliyuncs.com
+          username: "${{ secrets.ALIYUN_REGISTRY_USERNAME }}"
+          password: "${{ secrets.ALIYUN_REGISTRY_PASSWORD }}"
+      -
+        name: Build and push
+        run: |
+          homeassistant_version="${{fromJson(steps.load_version.outputs.packageJson).homeassistant.qemuarm-64}}"
+          docker pull ghcr.io/home-assistant/qemuarm-64-homeassistant:$homeassistant_version
+          docker tag ghcr.io/home-assistant/qemuarm-64-homeassistant:$homeassistant_version registry.cn-hangzhou.aliyuncs.com/panther-ha/qemuarm-64-homeassistant:$homeassistant_version
+          docker push registry.cn-hangzhou.aliyuncs.com/panther-ha/qemuarm-64-homeassistant:$homeassistant_version
+          docker pull ghcr.io/home-assistant/qemuarm-64-homeassistant:landingpage
+          docker tag ghcr.io/home-assistant/qemuarm-64-homeassistant:landingpage registry.cn-hangzhou.aliyuncs.com/panther-ha/qemuarm-64-homeassistant:landingpage
+          docker push registry.cn-hangzhou.aliyuncs.com/panther-ha/qemuarm-64-homeassistant:landingpage
+
+          
+          cli_version="${{fromJson(steps.load_version.outputs.packageJson).cli}}"
+          docker pull ghcr.io/home-assistant/aarch64-hassio-cli:$cli_version
+          docker tag ghcr.io/home-assistant/aarch64-hassio-cli:$cli_version registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-cli:$cli_version
+          docker push registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-cli:$cli_version
+
+          audio_version="${{fromJson(steps.load_version.outputs.packageJson).audio}}"
+          docker pull ghcr.io/home-assistant/aarch64-hassio-audio:$audio_version
+          docker tag ghcr.io/home-assistant/aarch64-hassio-audio:$audio_version registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-audio:$audio_version
+          docker push registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-audio:$audio_version
+
+          dns_version="${{fromJson(steps.load_version.outputs.packageJson).dns}}"
+          docker pull ghcr.io/home-assistant/aarch64-hassio-dns:$dns_version
+          docker tag ghcr.io/home-assistant/aarch64-hassio-dns:$dns_version registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-dns:$dns_version
+          docker push registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-dns:$dns_version
+
+          observer_version="${{fromJson(steps.load_version.outputs.packageJson).observer}}"
+          docker pull ghcr.io/home-assistant/aarch64-hassio-observer:$observer_version
+          docker tag ghcr.io/home-assistant/aarch64-hassio-observer:$observer_version registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-observer:$observer_version
+          docker push registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-observer:$observer_version
+
+          multicast_version="${{fromJson(steps.load_version.outputs.packageJson).multicast}}"
+          docker pull ghcr.io/home-assistant/aarch64-hassio-multicast:$multicast_version
+          docker tag ghcr.io/home-assistant/aarch64-hassio-multicast:$multicast_version registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-multicast:$multicast_version
+          docker push registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-multicast:$multicast_version
+

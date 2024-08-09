@@ -1,0 +1,41 @@
+name: Sync addon docker images to Aliyun
+
+on:
+  schedule:
+    - cron: '30 5 * * *'
+  push:
+    paths:
+      - '**.json'
+    branches:
+      - '12.4'
+  repository_dispatch:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    if: ${{ github.event.repository.owner.id }} == ${{ github.event.sender.id }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+          
+      - name: Login to Aliyun Container Registry
+        uses: docker/login-action@v3.1.0
+        with:
+          registry: registry.cn-hangzhou.aliyuncs.com
+          username: "${{ secrets.ALIYUN_REGISTRY_USERNAME }}"
+          password: "${{ secrets.ALIYUN_REGISTRY_PASSWORD }}"
+
+      - name: Config go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.20.0'
+          cache-dependency-path: actions/go.mod
+
+      - name: Sync addon docker images to Aliyun
+        run: cd actions && go run main.go --username ${{ secrets.ALIYUN_REGISTRY_USERNAME }} --password ${{ secrets.ALIYUN_REGISTRY_PASSWORD }}
