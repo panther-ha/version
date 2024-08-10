@@ -76,7 +76,7 @@
   },
   "images": {
     "core": "ghcr.io/home-assistant/{machine}-homeassistant",
-    "supervisor": "ghcr.io/home-assistant/{arch}-hassio-supervisor",
+    "supervisor": "ghcr.io/panther-ha/{arch}-hassio-supervisor",
     "cli": "ghcr.io/home-assistant/{arch}-hassio-cli",
     "audio": "ghcr.io/home-assistant/{arch}-hassio-audio",
     "dns": "ghcr.io/home-assistant/{arch}-hassio-dns",
@@ -89,6 +89,7 @@
     "kkgithub.com"
   ],
   "docker_mirror": {
+    "ghcr.io/home-assistant/aarch64-hassio-supervisor": "registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-supervisor",
     "ghcr.io/home-assistant/qemuarm-64-homeassistant": "registry.cn-hangzhou.aliyuncs.com/panther-ha/qemuarm-64-homeassistant",
     "ghcr.io/home-assistant/aarch64-hassio-cli": "registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-cli",
     "homeassistant/aarch64-addon-mosquitto": "registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-addon-mosquitto",

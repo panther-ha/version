@@ -7,7 +7,7 @@ on:
     paths:
       - '**.json'
     branches:
-      - '12.4'
+      - 'panther-ha'
   repository_dispatch:
   workflow_dispatch:
 
