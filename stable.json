@@ -89,7 +89,7 @@
     "kkgithub.com"
   ],
   "docker_mirror": {
-    "ghcr.io/home-assistant/aarch64-hassio-supervisor": "registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-supervisor",
+    "ghcr.io/panther-ha/aarch64-hassio-supervisor": "registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-supervisor",
     "ghcr.io/home-assistant/qemuarm-64-homeassistant": "registry.cn-hangzhou.aliyuncs.com/panther-ha/qemuarm-64-homeassistant",
     "ghcr.io/home-assistant/aarch64-hassio-cli": "registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-hassio-cli",
     "homeassistant/aarch64-addon-mosquitto": "registry.cn-hangzhou.aliyuncs.com/panther-ha/aarch64-addon-mosquitto",
