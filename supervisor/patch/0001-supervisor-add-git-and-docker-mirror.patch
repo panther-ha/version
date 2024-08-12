@@ -1,15 +1,16 @@
-From 5133d12d69ff6f7cda1b3a95b3a33fff68c16a5c Mon Sep 17 00:00:00 2001
+From 2abb2dfd39ffcc17d2238f7b597dff215d651e2b Mon Sep 17 00:00:00 2001
 From: yplam <yplam@yplam.com>
-Date: Sun, 16 Jun 2024 21:03:13 +0800
+Date: Mon, 12 Aug 2024 21:11:24 +0800
 Subject: [PATCH] supervisor add git and docker mirror
 
 ---
  supervisor/const.py            |  6 +++--
- supervisor/docker/interface.py | 48 ++++++++++++++++++++++++++++++----
- supervisor/store/git.py        | 44 ++++++++++++++++++++-----------
+ supervisor/docker/interface.py | 34 +++++++++++++++++++++----
+ supervisor/store/git.py        | 46 +++++++++++++++++++++++-----------
+ supervisor/store/validate.py   |  4 +++
  supervisor/updater.py          | 16 ++++++++++++
  supervisor/validate.py         |  4 +++
- 5 files changed, 96 insertions(+), 22 deletions(-)
+ 6 files changed, 88 insertions(+), 22 deletions(-)
 
 diff --git a/supervisor/const.py b/supervisor/const.py
 index c87f8c11..7b06eb3a 100644
@@ -43,10 +44,10 @@ index c87f8c11..7b06eb3a 100644
  ATTR_HASSIO_ROLE = "hassio_role"
  ATTR_HASSOS = "hassos"
 diff --git a/supervisor/docker/interface.py b/supervisor/docker/interface.py
-index 8ccf8c34..94903464 100644
+index 8ccf8c34..bfc1683f 100644
 --- a/supervisor/docker/interface.py
 +++ b/supervisor/docker/interface.py
-@@ -238,11 +238,49 @@ class DockerInterface(JobGroup):
+@@ -238,11 +238,35 @@ class DockerInterface(JobGroup):
                  await self._docker_login(image)
  
              # Pull new image
@@ -60,23 +61,9 @@ index 8ccf8c34..94903464 100644
 +
 +            if self.coresys.updater.docker_mirror is not None:
 +                for k, v in self.coresys.updater.docker_mirror.items():
-+                    _LOGGER.info("Docker mirror %s : %s", k, v)
 +                    if image == k:
 +                        _LOGGER.info("Use mirror: %s", v)
 +                        image_urls.append(v)
-+
-+            # if ((image.startswith("ghcr.io/home-assistant") or image.startswith("ghcr.io/panther-ha"))
-+            #         and self.coresys.updater.docker_ghcr_mirror is not None):
-+            #     for mirror in self.coresys.updater.docker_ghcr_mirror:
-+            #         _LOGGER.info("Using GHCR mirror: %s", mirror)
-+            #         image_url = image.replace("ghcr.io/home-assistant", mirror)
-+            #         image_url = image_url.replace("ghcr.io/panther-ha", mirror)
-+            #         image_urls.append(image_url)
-+            #
-+            # if self.coresys.updater.docker_prefix_mirror is not None:
-+            #     for mirror in self.coresys.updater.docker_prefix_mirror:
-+            #         _LOGGER.info("Using Docker prefix mirror: %s", mirror)
-+            #         image_urls.append(f"{mirror}/{image}")
 +
 +            image_urls.append(image)
 +
@@ -102,10 +89,10 @@ index 8ccf8c34..94903464 100644
              # Validate content
              try:
 diff --git a/supervisor/store/git.py b/supervisor/store/git.py
-index b37f773b..e56d6075 100644
+index b37f773b..c57feeff 100644
 --- a/supervisor/store/git.py
 +++ b/supervisor/store/git.py
-@@ -95,22 +95,36 @@ class GitRepo(CoreSysAttributes):
+@@ -95,22 +95,38 @@ class GitRepo(CoreSysAttributes):
                  if value is not None
              }
  
@@ -114,11 +101,13 @@ index b37f773b..e56d6075 100644
 -                self.repo = await self.sys_run_in_executor(
 -                    ft.partial(
 -                        git.Repo.clone_from, self.url, str(self.path), **git_args
-+            urls = [self.url]
++            urls = []
 +            if self.coresys.updater.github_mirror is not None:
 +                for mirror in self.coresys.updater.github_mirror:
 +                    _LOGGER.info("Using GitHub mirror: %s", mirror)
 +                    urls.append(self.url.replace("github.com", mirror))
++
++            urls.append(self.url)
 +
 +            err_to_raise = None
 +
@@ -157,6 +146,27 @@ index b37f773b..e56d6075 100644
  
      @Job(
          name="git_repo_pull",
+diff --git a/supervisor/store/validate.py b/supervisor/store/validate.py
+index e21982ea..38720a59 100644
+--- a/supervisor/store/validate.py
++++ b/supervisor/store/validate.py
+@@ -9,12 +9,16 @@ from .const import StoreType
+ URL_COMMUNITY_ADDONS = "https://github.com/hassio-addons/repository"
+ URL_ESPHOME = "https://github.com/esphome/home-assistant-addon"
+ URL_MUSIC_ASSISTANT = "https://github.com/music-assistant/home-assistant-addon"
++URL_PANTHER_HA = "https://github.com/panther-ha/home-assistant-addon"
++URL_ZIGBEE2MQTT = "https://github.com/zigbee2mqtt/hassio-zigbee2mqtt"
+ BUILTIN_REPOSITORIES = {
+     StoreType.CORE,
+     StoreType.LOCAL,
+     URL_COMMUNITY_ADDONS,
+     URL_ESPHOME,
+     URL_MUSIC_ASSISTANT,
++    URL_PANTHER_HA,
++    URL_ZIGBEE2MQTT,
+ }
+ 
+ # pylint: disable=no-value-for-parameter
 diff --git a/supervisor/updater.py b/supervisor/updater.py
 index 47571fc0..bd9f1891 100644
 --- a/supervisor/updater.py
@@ -229,5 +239,5 @@ index 8aa3f296..e67848ac 100644
      extra=vol.REMOVE_EXTRA,
  )
 -- 
-2.45.1
+2.45.2
 
