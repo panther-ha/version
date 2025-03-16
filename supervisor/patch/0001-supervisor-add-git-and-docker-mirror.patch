@@ -1,16 +1,16 @@
-From 658500f6b5be7952f24d07cffbdc5d48d00a7e2b Mon Sep 17 00:00:00 2001
+From c1cf8fcffe281cf81b09dbec6857ee1728ac1e73 Mon Sep 17 00:00:00 2001
 From: yplam <yplam@yplam.com>
-Date: Thu, 6 Mar 2025 16:36:29 +0800
+Date: Sun, 16 Mar 2025 19:07:28 +0800
 Subject: [PATCH] supervisor add git and docker mirror
 
 ---
- supervisor/const.py            |  6 +++--
- supervisor/docker/interface.py | 34 +++++++++++++++++++++----
- supervisor/store/git.py        | 46 +++++++++++++++++++++++-----------
+ supervisor/const.py            |  6 ++--
+ supervisor/docker/interface.py | 34 +++++++++++++++++++----
+ supervisor/store/git.py        | 50 +++++++++++++++++++++++-----------
  supervisor/store/validate.py   |  4 +++
- supervisor/updater.py          | 16 ++++++++++++
+ supervisor/updater.py          | 16 +++++++++++
  supervisor/validate.py         |  4 +++
- 6 files changed, 88 insertions(+), 22 deletions(-)
+ 6 files changed, 91 insertions(+), 23 deletions(-)
 
 diff --git a/supervisor/const.py b/supervisor/const.py
 index 4bfde290..e67bfc8b 100644
@@ -89,15 +89,17 @@ index 6c8c843d..1d814ed5 100644
              # Validate content
              try:
 diff --git a/supervisor/store/git.py b/supervisor/store/git.py
-index f0bb3a7b..81e8bec7 100644
+index 6841e682..f5353e5f 100644
 --- a/supervisor/store/git.py
 +++ b/supervisor/store/git.py
-@@ -96,22 +96,38 @@ class GitRepo(CoreSysAttributes):
+@@ -96,24 +96,42 @@ class GitRepo(CoreSysAttributes):
                  if value is not None
              }
  
 -            try:
--                _LOGGER.info("Cloning add-on %s repository", self.url)
+-                _LOGGER.info(
+-                    "Cloning add-on %s repository from %s", self.path, self.url
+-                )
 -                self.repo = await self.sys_run_in_executor(
 -                    ft.partial(
 -                        git.Repo.clone_from, self.url, str(self.path), **git_args
@@ -113,22 +115,16 @@ index f0bb3a7b..81e8bec7 100644
 +
 +            for url in urls:
 +                try:
++                    _LOGGER.info(
++                        "Cloning add-on %s repository from %s", self.path, url
+                     )
+-                )
 +                    _LOGGER.info("Cloning add-on %s repository", self.url)
 +                    self.repo = await self.sys_run_in_executor(
 +                        ft.partial(
 +                            git.Repo.clone_from, url, str(self.path), **git_args
 +                        )
-                     )
--                )
--
--            except (
--                git.InvalidGitRepositoryError,
--                git.NoSuchPathError,
--                git.CommandError,
--                UnicodeDecodeError,
--            ) as err:
--                _LOGGER.error("Can't clone %s repository: %s.", self.url, err)
--                raise StoreGitCloneError() from err
++                    )
 +                    err_to_raise = None
 +                    break
 +
@@ -143,6 +139,15 @@ index f0bb3a7b..81e8bec7 100644
 +
 +            if err_to_raise is not None:
 +                raise StoreGitCloneError() from err_to_raise
+ 
+-            except (
+-                git.InvalidGitRepositoryError,
+-                git.NoSuchPathError,
+-                git.CommandError,
+-                UnicodeDecodeError,
+-            ) as err:
+-                _LOGGER.error("Can't clone %s repository: %s.", self.url, err)
+-                raise StoreGitCloneError() from err
  
      @Job(
          name="git_repo_pull",
@@ -240,5 +245,5 @@ index b22a1b3e..3a3d3ffa 100644
      extra=vol.REMOVE_EXTRA,
  )
 -- 
-2.48.1
+2.47.1
 
